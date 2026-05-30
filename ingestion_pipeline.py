@@ -65,15 +65,39 @@ def split_documents(documents, chunk_size=800, chunk_overlap=0):
         
     return chunks
 
+def create_vector_store(chunks, persist_directory="db/chroma_db"):
+    """Create and persist ChromaDB vector store"""
+    print("Creating embeddings and storing in ChromaDB")
+    
+    embedding_model = OpenAIEmbeddings(model="text-embedding-3-small")
+    
+    # Create ChromaDB vector store
+    print("---Creating vector store ---")
+    vectorstore = Chroma.from_documents(
+        documents=chunks,
+        embedding=embedding_model,
+        persist_directory=persist_directory,
+        collection_metadata={"hnsw:space":"cosine"}
+    )
+    
+    print("---Finished creating vector store ---")
+    
+    print(f"Vector store created and saved to {persist_directory}")
+    
+    return vectorstore
+
 def main():
     
     print("Main function")
     
     #1. loading the files
     documents = load_documents(docs_path="docs")
+    
     #2. Chunking the files
     chunks = split_documents(documents)
+    
     #3. Embedding and storing in Vector DB
+    vector_store = create_vector_store(chunks, persist_directory="db/chroma_db")
     
 if __name__ == "__main__":
     main()
